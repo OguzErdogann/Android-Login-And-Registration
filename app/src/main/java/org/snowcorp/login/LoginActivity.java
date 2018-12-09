@@ -32,11 +32,6 @@ import org.snowcorp.login.helper.SessionManager;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Akshay Raj on 6/16/2016.
- * akshay@snowcorp.org
- * www.snowcorp.org
- */
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = LoginActivity.class.getSimpleName();
 
@@ -109,9 +104,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Please enter the credentials!", Toast.LENGTH_LONG).show();
                 }
             }
-
         });
-
         // Link to Register Screen
         btnLinkToRegister.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -119,90 +112,6 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
-
-        // Forgot Password Dialog
-        btnForgotPass.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                forgotPasswordDialog();
-            }
-        });
-    }
-
-    private void forgotPasswordDialog() {
-        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.reset_password, null);
-
-        dialogBuilder.setView(dialogView);
-        dialogBuilder.setTitle("Forgot Password");
-        dialogBuilder.setCancelable(false);
-
-        final TextInputLayout mEditEmail = (TextInputLayout) dialogView.findViewById(R.id.editEmail);
-
-        dialogBuilder.setPositiveButton("Reset",  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // empty
-            }
-        });
-
-        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        final AlertDialog alertDialog = dialogBuilder.create();
-
-        mEditEmail.getEditText().addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(mEditEmail.getEditText().getText().length() > 0){
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                } else {
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(final DialogInterface dialog) {
-                final Button b = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                b.setEnabled(false);
-
-                b.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String email = mEditEmail.getEditText().getText().toString();
-
-                        if (!email.isEmpty()) {
-                            if (Functions.isValidEmailAddress(email)) {
-                                resetPassword(email);
-                                dialog.dismiss();
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Email is not valid!", Toast.LENGTH_SHORT).show();
-                            }
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Fill all values!", Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-                });
-            }
-        });
-
-        alertDialog.show();
     }
 
     private void loginProcess(final String email, final String password) {
@@ -283,76 +192,7 @@ public class LoginActivity extends AppCompatActivity {
             }
 
         };
-
         // Adding request to request queue
-        MyApplication.getInstance().addToRequestQueue(strReq, tag_string_req);
-    }
-
-    private void resetPassword(final String email) {
-        // Tag used to cancel the request
-        String tag_string_req = "req_reset_pass";
-
-        pDialog.setMessage("Please wait...");
-        showDialog();
-
-        StringRequest strReq = new StringRequest(Request.Method.POST,
-                Functions.RESET_PASS_URL, new Response.Listener<String>() {
-
-            @Override
-            public void onResponse(String response) {
-                Log.d(TAG, "Reset Password Response: " + response);
-                hideDialog();
-
-                try {
-                    JSONObject jObj = new JSONObject(response);
-                    boolean error = jObj.getBoolean("error");
-
-                    if (!error) {
-                        Toast.makeText(getApplicationContext(), jObj.getString("message"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getApplicationContext(), jObj.getString("message"), Toast.LENGTH_LONG).show();
-                    }
-
-                } catch (JSONException e) {
-                    // JSON error
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "Reset Password Error: " + error.getMessage());
-                Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-                hideDialog();
-            }
-        }) {
-
-            @Override
-            protected Map<String, String> getParams() {
-                // Posting parameters to login url
-                Map<String, String> params = new HashMap<>();
-
-                params.put("tag", "forgot_pass");
-                params.put("email", email);
-
-                return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
-            }
-
-        };
-
-        // Adding request to volley request queue
-        strReq.setRetryPolicy(new DefaultRetryPolicy(5 * DefaultRetryPolicy.DEFAULT_TIMEOUT_MS, 0, 0));
-        strReq.setRetryPolicy(new DefaultRetryPolicy(0, 0, 0));
         MyApplication.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
